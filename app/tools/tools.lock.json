@@ -1,0 +1,95 @@
+﻿{
+    "files":  [
+                  {
+                      "name":  "7z.exe",
+                      "version":  "26.06",
+                      "sha256":  "dc0493429fe28136fcb177a0e77c9875cbb3b0bff5f2f8eeba4df302e98cef76",
+                      "source":  "local:7-Zip",
+                      "category":  "distributable"
+                  },
+                  {
+                      "name":  "7z.dll",
+                      "version":  "26.06",
+                      "sha256":  "500db9eb17f3c21b729ba41dd02ecfe1823da05028c7e4ba129084cc74cc364e",
+                      "source":  "local:7-Zip",
+                      "category":  "distributable"
+                  },
+                  {
+                      "name":  "innoextract.exe",
+                      "version":  "1.9",
+                      "sha256":  "946bd06d8b3722a791fea4d84f496139eef6faef61640924cb72f5f1998a68e1",
+                      "source":  "local:innoextract",
+                      "category":  "distributable"
+                  },
+                  {
+                      "name":  "licenses/innoextract/Boost.LICENSE_1_0.txt",
+                      "version":  "1.9",
+                      "sha256":  "beb8e42e9d6b4284e03304d05a81a0755200a965fc8d0a5e0aea1e84cf805d6e",
+                      "source":  "local:innoextract license\\Boost.LICENSE_1_0.txt",
+                      "category":  "license"
+                  },
+                  {
+                      "name":  "licenses/innoextract/liblzma.COPYING.txt",
+                      "version":  "1.9",
+                      "sha256":  "54eacb8b8530b44c47b2d16b9a3f8fe32ac585cb1093ab2a251460bc411b32c3",
+                      "source":  "local:innoextract license\\liblzma.COPYING.txt",
+                      "category":  "license"
+                  },
+                  {
+                      "name":  "licenses/innoextract/libstdc++.COPYING.RUNTIME.txt",
+                      "version":  "1.9",
+                      "sha256":  "90077ba306ee9d8ed966cab1b4abd69b6e728acf08777283cc50283cd9503fa6",
+                      "source":  "local:innoextract license\\libstdc++.COPYING.RUNTIME.txt",
+                      "category":  "license"
+                  },
+                  {
+                      "name":  "licenses/innoextract/libstdc++.COPYING3.txt",
+                      "version":  "1.9",
+                      "sha256":  "0b383d5a63da644f628d99c33976ea6487ed89aaa59f0b3257992deac1171e6b",
+                      "source":  "local:innoextract license\\libstdc++.COPYING3.txt",
+                      "category":  "license"
+                  },
+                  {
+                      "name":  "licenses/dotnet/LICENSE.TXT",
+                      "version":  "8.0.34",
+                      "sha256":  "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b",
+                      "source":  "nuget-cache:microsoft.netcore.app.runtime.win-x64@8.0.34/LICENSE.TXT",
+                      "category":  "license"
+                  },
+                  {
+                      "name":  "licenses/dotnet/THIRD-PARTY-NOTICES.TXT",
+                      "version":  "8.0.34",
+                      "sha256":  "b60b2912da28eaa6518593c9e2efb5334ee062d3c42e80d8fdfa806b3dc52977",
+                      "source":  "nuget-cache:microsoft.netcore.app.runtime.win-x64@8.0.34/THIRD-PARTY-NOTICES.TXT",
+                      "category":  "license"
+                  },
+                  {
+                      "name":  "licenses/dotnet/WindowsDesktop-LICENSE.txt",
+                      "version":  "8.0.34",
+                      "sha256":  "a89886665765362eb77e0f8e26602c924520041d1711b2eedc136434fe4d01ab",
+                      "source":  "nuget-cache:microsoft.windowsdesktop.app.runtime.win-x64@8.0.34/LICENSE",
+                      "category":  "license"
+                  },
+                  {
+                      "name":  "licenses/7-Zip-License.txt",
+                      "version":  "26.06",
+                      "sha256":  "519ac0a4bded9c18ea02e0afb71f663d8c47373bd9facd3ac96a79f51d77765d",
+                      "source":  "local:7-Zip License.txt",
+                      "category":  "license"
+                  },
+                  {
+                      "name":  "licenses/LGPL-2.1.txt",
+                      "version":  "2.1",
+                      "sha256":  "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+                      "source":  "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt",
+                      "category":  "license"
+                  },
+                  {
+                      "name":  "licenses/innoextract-LICENSE.txt",
+                      "version":  "1.9",
+                      "sha256":  "7cd6f3bf0c83f2c3ce8438aab20a4827a5de934fb87dd7966f6f3f2651685127",
+                      "source":  "https://raw.githubusercontent.com/dscharrer/innoextract/1.9/LICENSE",
+                      "category":  "license"
+                  }
+              ]
+}
