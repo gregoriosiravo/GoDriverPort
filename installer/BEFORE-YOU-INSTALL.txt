@@ -1,0 +1,37 @@
+BEFORE YOU INSTALL: please read this once
+
+What this app does
+- It takes the Lenovo Legion Go graphics driver package and the AMD Adrenalin
+  driver package that YOU provide, and builds a modified copy of AMD's display
+  driver so that it installs on your own Legion Go.
+- To make Windows accept that modified driver, it creates a self-signed
+  certificate on this PC and trusts it machine-wide (in the Windows
+  "Trusted Root" and "Trusted Publishers" stores).
+- It creates a System Restore point before it changes anything.
+- If you ask it to, it can also install AMD Software (Adrenalin).
+- It only supports the first-generation Lenovo Legion Go (Ryzen Z1 Extreme).
+
+What this app is not
+- Legion Go Driver Port is an unofficial community tool. It is not made, approved, supported or
+  endorsed by Lenovo or AMD.
+- Lenovo, Legion, AMD, Radeon and Adrenalin are trademarks of their owners.
+- The app does not download or include any AMD or Lenovo files. You supply them.
+
+What you need
+- The free Windows SDK signing tools (signtool.exe and makecat.exe, from the
+  "Windows SDK Signing Tools for Desktop Apps" feature). They are not included
+  because Microsoft does not allow redistributing them. The app tells you if
+  they are missing and how to install them:
+      winget install --interactive Microsoft.WindowsSDK.10.0.28000
+
+No warranty
+- This software is provided "as is", without warranty of any kind, under the
+  MIT licence (shown on the previous page). Changing a graphics driver can go
+  wrong. You use it at your own risk.
+
+If something goes wrong
+- Use Rollback in the app: it puts Lenovo's original driver back and removes
+  the certificate.
+- You can also use the System Restore point the app created.
+- Before you start, make sure you have your BitLocker recovery key saved
+  somewhere other than this PC. Windows can ask for it after system changes.
