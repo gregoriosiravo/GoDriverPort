@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copy this file to app/tests/local.runsettings (git-ignored), fill in the folders that exist on your machine, and run:
+      dotnet test app --settings app/tests/local.runsettings
+  Every variable is optional. Tests that need one that is not set are SKIPPED (they never fail because of it).
+  None of these tests change the system: they only read the files below. Do not commit AMD or Lenovo files.
+-->
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <!-- Folder where AMD's driver installer was extracted (contains Packages\Drivers\Display\WT6A_INF). -->
+      <LGO_AMD_ROOT>D:\lgo-test-data\extracted\amd</LGO_AMD_ROOT>
+      <!-- Folder where Lenovo's Legion Go driver installer was extracted (innoextract output; contains the Lenovo INF). -->
+      <LGO_LENOVO_ROOT>D:\lgo-test-data\extracted\lenovo</LGO_LENOVO_ROOT>
+      <!-- Folder containing the extracted AMD Software payload: cnext\cnext64\ccc-next64.msi and amddvr\amddvr64\amddvr64.msi. -->
+      <LGO_AMD_SOFTWARE_ROOT>D:\lgo-test-data\extracted\amd-software\CN</LGO_AMD_SOFTWARE_ROOT>
+      <!-- Folder containing the two ORIGINAL installers: driver_amd7840U.exe and driver_lenovo.exe (also needs 7-Zip and innoextract on PATH). -->
+      <LGO_INSTALLERS_DIR>D:\lgo-test-data</LGO_INSTALLERS_DIR>
+      <!-- Folder containing makecat.exe and signtool.exe (e.g. your Windows SDK ...\bin\10.0.xxxxx.0\x64 folder, or app\tools). -->
+      <LGO_TOOLS_DIR>C:\Program Files (x86)\Windows Kits\10\bin\10.0.28000.0\x64</LGO_TOOLS_DIR>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>
