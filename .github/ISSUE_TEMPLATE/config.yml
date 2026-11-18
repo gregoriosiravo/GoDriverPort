@@ -1,0 +1,3 @@
+# GitHub adds a "Report a vulnerability" link to the issue chooser automatically when private vulnerability reporting is enabled
+# for the repository (Settings > Code security). See SECURITY.md.
+blank_issues_enabled: false

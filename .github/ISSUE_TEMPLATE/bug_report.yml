@@ -1,0 +1,66 @@
+name: Bug report
+description: Something went wrong while using Legion Go Driver Port
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Never paste a BitLocker recovery key, a certificate private key, or any password** into this form.
+        Only the exact Lenovo Legion Go (first model, Z1 Extreme) is supported. Reports from other devices will be closed.
+        If your screen is black or Windows will not start, see the "Last resort" section of `docs/VALIDATION-CHECKLIST.md` first.
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: From the Releases page, the installer file name, or the app's title/about text (for example 0.1.0).
+    validations:
+      required: true
+  - type: input
+    id: windows-build
+    attributes:
+      label: Windows version and build
+      description: Run `winver` (for example Windows 11 24H2, build 26100.1234).
+    validations:
+      required: true
+  - type: input
+    id: hwid
+    attributes:
+      label: GPU hardware ID
+      description: Device Manager > Display adapters > Properties > Details > Hardware Ids (first line), for example `PCI\VEN_1002&DEV_15BF&SUBSYS_381217AA&REV_04`.
+    validations:
+      required: true
+  - type: input
+    id: drivers
+    attributes:
+      label: Driver packages used
+      description: The Lenovo and AMD installer versions you provided (for example Lenovo 25.30.44, AMD 26.10.2).
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead? At which step did it stop?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Session log and manifest
+      description: |
+        Attach (or paste the relevant part of) the files from `C:\ProgramData\LegionGoDriverConverter\sessions\<timestamp>\` (the log and the manifest). Review them first and remove anything you do not want to share.
+      render: text
+  - type: textarea
+    id: state
+    attributes:
+      label: Current state of the device
+      description: Does the GPU work? Device Manager problem code? Did you use Rollback, and what happened?
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: I did not include a BitLocker key, private key or password in this report.
+          required: true
+        - label: This is a first-generation Lenovo Legion Go (Ryzen Z1 Extreme).
+          required: true
