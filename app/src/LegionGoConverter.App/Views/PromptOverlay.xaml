@@ -1,0 +1,38 @@
+<UserControl x:Class="LegionGoConverter.App.Views.PromptOverlay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:app="clr-namespace:LegionGoConverter.App"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance Type=app:PromptRequest}"
+             KeyboardNavigation.TabNavigation="Cycle"
+             KeyboardNavigation.DirectionalNavigation="Cycle"
+             KeyboardNavigation.ControlTabNavigation="Cycle">
+    <Grid Background="{DynamicResource Brush.Scrim}">
+        <!-- The sheet is as tall as its content, up to the window height minus the margin; the message then scrolls.
+             The message is a focusable reading area placed right before No/Yes in the focus order; No is focused first. -->
+        <Border Style="{StaticResource Card}" MaxWidth="860" Margin="32" Padding="40,32" VerticalAlignment="Center"
+                BorderBrush="{DynamicResource Brush.Accent}" BorderThickness="2" Background="{DynamicResource Brush.Surface}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Style="{StaticResource Text.Title}" Text="{Binding Title}" />
+                <Grid DockPanel.Dock="Bottom" Margin="0,28,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource Text.Muted}" FontSize="17" VerticalAlignment="Center" Margin="0,0,16,0"
+                               Text="B or Esc answers No" />
+                    <Button x:Name="YesButton" Grid.Column="1" Style="{StaticResource Button.Secondary}" Command="{Binding YesCommand}"
+                            Content="Yes" MinWidth="170" Margin="0,0,20,0" TabIndex="2" />
+                    <Button x:Name="NoButton" Grid.Column="2" Style="{StaticResource Button.Primary}" Command="{Binding NoCommand}"
+                            Content="No" MinWidth="200" TabIndex="1" />
+                </Grid>
+                <ScrollViewer x:Name="MessageScroll" Style="{StaticResource Scroll.Reading}" Margin="0,18,0,0" TabIndex="0"
+                              AutomationProperties.Name="Message">
+                    <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Message}" Margin="0,0,14,0" />
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>

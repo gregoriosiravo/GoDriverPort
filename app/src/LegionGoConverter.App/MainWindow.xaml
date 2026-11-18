@@ -1,0 +1,172 @@
+﻿<Window x:Class="LegionGoConverter.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:app="clr-namespace:LegionGoConverter.App"
+        xmlns:v="clr-namespace:LegionGoConverter.App.Views"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=app:MainViewModel}"
+        Title="Legion Go Driver Port"
+        Width="1280" Height="800" MinWidth="960" MinHeight="600"
+        WindowState="Maximized" WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Brush.Bg}"
+        Foreground="{DynamicResource Brush.Text}"
+        FontFamily="{StaticResource Font.Text}" FontSize="21"
+        UseLayoutRounding="True"
+        KeyboardNavigation.TabNavigation="Cycle">
+    <Grid>
+        <!-- The page. Disabled while a prompt is open, so focus cannot leave the prompt. -->
+        <Grid x:Name="Page" IsEnabled="{Binding PendingPrompt, Converter={StaticResource IsNull}}"
+              KeyboardNavigation.DirectionalNavigation="Contained">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header: app name and the four-step gauge -->
+            <Border Grid.Row="0" Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Line}" BorderThickness="0,0,0,1">
+                <Grid MaxWidth="1200" Margin="32,16,32,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,32,0">
+                        <TextBlock Style="{StaticResource Text.Heading}" Text="Legion Go Driver Port" />
+                        <TextBlock Style="{StaticResource Text.Muted}" FontSize="17" Text="A newer AMD graphics driver, made to install on your Legion Go" />
+                    </StackPanel>
+                    <UniformGrid Grid.Column="1" Rows="1" Columns="4" VerticalAlignment="Center" MaxWidth="640" HorizontalAlignment="Right">
+                        <v:StepSegment Index="0" Label="Choose files" Step="{Binding Step}" />
+                        <v:StepSegment Index="1" Label="Review" Step="{Binding Step}" />
+                        <v:StepSegment Index="2" Label="Convert" Step="{Binding Step}" />
+                        <v:StepSegment Index="3" Label="Result" Step="{Binding Step}" />
+                    </UniformGrid>
+                </Grid>
+            </Border>
+
+            <!-- Screens -->
+            <Grid Grid.Row="1" MaxWidth="1264">
+                <v:SelectView x:Name="SelectScreen" Visibility="{Binding Step, Converter={StaticResource StepVisible}, ConverterParameter=Select}" />
+                <v:ReviewView x:Name="ReviewScreen" Visibility="{Binding Step, Converter={StaticResource StepVisible}, ConverterParameter=Review}" />
+                <v:ProgressView x:Name="ProgressScreen" Visibility="{Binding Step, Converter={StaticResource StepVisible}, ConverterParameter=Progress}" />
+                <v:ResultView x:Name="ResultScreen" Visibility="{Binding Step, Converter={StaticResource StepVisible}, ConverterParameter=Result}" />
+            </Grid>
+
+            <!-- Action bar: Back and secondary actions on the left, the primary action on the right -->
+            <Border Grid.Row="2" Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Line}" BorderThickness="0,1,0,0">
+                <Grid MaxWidth="1200" Margin="32,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Select -->
+                        <Button x:Name="SelectRollbackButton" Style="{StaticResource Button.Danger}" Command="{Binding RollbackCommand}"
+                                Content="Roll back to Lenovo's driver">
+                            <Button.Visibility>
+                                <MultiBinding Converter="{StaticResource AllVisible}">
+                                    <Binding Path="Step" Converter="{StaticResource StepVisible}" ConverterParameter="Select" />
+                                    <Binding Path="HasPreviousSession" Converter="{StaticResource BoolVisible}" />
+                                </MultiBinding>
+                            </Button.Visibility>
+                        </Button>
+                        <!-- Review -->
+                        <Button x:Name="BackButton" Style="{StaticResource Button.Secondary}" Command="{Binding BackCommand}" Content="Back"
+                                MinWidth="160" Visibility="{Binding Step, Converter={StaticResource StepVisible}, ConverterParameter=Review}" />
+                        <!-- Result -->
+                        <Button x:Name="OpenLogButton" Style="{StaticResource Button.Secondary}" Command="{Binding OpenLogCommand}" Content="Open log folder"
+                                Margin="0,0,16,0">
+                            <Button.Visibility>
+                                <MultiBinding Converter="{StaticResource AllVisible}">
+                                    <Binding Path="Step" Converter="{StaticResource StepVisible}" ConverterParameter="Result" />
+                                    <Binding Path="SessionDir" Converter="{StaticResource EmptyCollapsed}" />
+                                </MultiBinding>
+                            </Button.Visibility>
+                        </Button>
+                        <Button x:Name="ResultRollbackButton" Style="{StaticResource Button.Danger}" Command="{Binding RollbackCommand}"
+                                Content="Roll back to Lenovo's driver">
+                            <Button.Visibility>
+                                <MultiBinding Converter="{StaticResource AllVisible}">
+                                    <Binding Path="Step" Converter="{StaticResource StepVisible}" ConverterParameter="Result" />
+                                    <Binding Path="HasPreviousSession" Converter="{StaticResource BoolVisible}" />
+                                </MultiBinding>
+                            </Button.Visibility>
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Select -->
+                        <Button x:Name="NextButton" Style="{StaticResource Button.Primary}" Command="{Binding NextCommand}" MinWidth="260"
+                                Content="Review changes" Visibility="{Binding Step, Converter={StaticResource StepVisible}, ConverterParameter=Select}" />
+                        <!-- Review -->
+                        <Button x:Name="StartButton" Command="{Binding StartCommand}" MinWidth="260"
+                                Visibility="{Binding Step, Converter={StaticResource StepVisible}, ConverterParameter=Review}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource Button.Primary}">
+                                    <Setter Property="Content" Value="Convert and install" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding InstallDriver}" Value="False">
+                                            <Setter Property="Content" Value="Convert only" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsExportOnly}" Value="True">
+                                            <Setter Property="Content" Value="Convert and export" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <!-- Progress -->
+                        <Button x:Name="CancelButton" Style="{StaticResource Button.Danger}" Command="{Binding CancelCommand}" MinWidth="220"
+                                Content="Cancel">
+                            <Button.Visibility>
+                                <MultiBinding Converter="{StaticResource AllVisible}">
+                                    <Binding Path="Step" Converter="{StaticResource StepVisible}" ConverterParameter="Progress" />
+                                    <Binding Path="InstallStarted" Converter="{StaticResource BoolVisible}" ConverterParameter="invert" />
+                                </MultiBinding>
+                            </Button.Visibility>
+                        </Button>
+                        <!-- After the confirmation the changes run to the end: no Cancel (B / Esc do nothing either). -->
+                        <TextBlock x:Name="NoCancelText" Style="{StaticResource Text.Body}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                   Text="Installing: cannot be cancelled">
+                            <TextBlock.Visibility>
+                                <MultiBinding Converter="{StaticResource AllVisible}">
+                                    <Binding Path="Step" Converter="{StaticResource StepVisible}" ConverterParameter="Progress" />
+                                    <Binding Path="InstallStarted" Converter="{StaticResource BoolVisible}" />
+                                </MultiBinding>
+                            </TextBlock.Visibility>
+                        </TextBlock>
+                        <!-- Result -->
+                        <Button x:Name="StartOverButton" Command="{Binding BackCommand}" MinWidth="200" Content="Start over"
+                                Visibility="{Binding Step, Converter={StaticResource StepVisible}, ConverterParameter=Result}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource Button.Primary}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding RebootRequired}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource Brush.SurfaceRaised}" />
+                                            <Setter Property="BorderBrush" Value="{DynamicResource Brush.Line}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button x:Name="RestartButton" Style="{StaticResource Button.Primary}" Command="{Binding RebootCommand}" MinWidth="240"
+                                Margin="16,0,0,0" Content="Restart Windows">
+                            <Button.Visibility>
+                                <MultiBinding Converter="{StaticResource AllVisible}">
+                                    <Binding Path="Step" Converter="{StaticResource StepVisible}" ConverterParameter="Result" />
+                                    <Binding Path="RebootRequired" Converter="{StaticResource BoolVisible}" />
+                                </MultiBinding>
+                            </Button.Visibility>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Confirmation sheet: covers the whole window; No is the default and takes focus first. -->
+        <v:PromptOverlay x:Name="Prompt" DataContext="{Binding PendingPrompt}"
+                         Visibility="{Binding Converter={StaticResource EmptyCollapsed}}" />
+    </Grid>
+</Window>

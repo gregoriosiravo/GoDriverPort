@@ -1,0 +1,137 @@
+<UserControl x:Class="LegionGoConverter.App.Views.SelectView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:app="clr-namespace:LegionGoConverter.App"
+             mc:Ignorable="d" d:DataContext="{d:DesignInstance Type=app:MainViewModel}">
+    <UserControl.Resources>
+        <!-- Detected state of one installer: pass / fail mark, verdict, version and message. -->
+        <DataTemplate x:Key="StatusTemplate" DataType="{x:Type app:InstallerStatus}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border x:Name="Mark" Width="44" Height="44" CornerRadius="22" VerticalAlignment="Top"
+                        Background="{DynamicResource Brush.SurfaceRaised}">
+                    <TextBlock x:Name="Glyph" Style="{StaticResource Text.Icon}" FontSize="20" Text="&#xE916;"
+                               Foreground="{DynamicResource Brush.TextMuted}" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="Verdict" Style="{StaticResource Text.Body}" FontWeight="SemiBold" Text="Checking the file..." />
+                    <TextBlock x:Name="VersionText" Style="{StaticResource Text.Muted}" Text="{Binding Version, StringFormat=Driver version {0}}"
+                               Visibility="{Binding Version, Converter={StaticResource EmptyCollapsed}}" />
+                    <TextBlock x:Name="Msg" Style="{StaticResource Text.Muted}" Margin="0,4,0,0" Text="{Binding Message}"
+                               Visibility="{Binding Message, Converter={StaticResource EmptyCollapsed}}" />
+                </StackPanel>
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsValid}" Value="True">
+                    <Setter TargetName="Mark" Property="Background" Value="{DynamicResource Brush.Success}" />
+                    <Setter TargetName="Glyph" Property="Text" Value="&#xE73E;" />
+                    <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource Brush.Surface}" />
+                    <Setter TargetName="Verdict" Property="Text" Value="Right file" />
+                    <Setter TargetName="Verdict" Property="Foreground" Value="{DynamicResource Brush.Success}" />
+                </DataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsValid}" Value="False" />
+                        <Condition Binding="{Binding IsChecking}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="Mark" Property="Background" Value="{DynamicResource Brush.Danger}" />
+                    <Setter TargetName="Glyph" Property="Text" Value="&#xE711;" />
+                    <Setter TargetName="Glyph" Property="Foreground" Value="{DynamicResource Brush.Surface}" />
+                    <Setter TargetName="Verdict" Property="Text" Value="Wrong file" />
+                    <Setter TargetName="Verdict" Property="Foreground" Value="{DynamicResource Brush.Danger}" />
+                    <Setter TargetName="Msg" Property="Foreground" Value="{DynamicResource Brush.Text}" />
+                    <Setter TargetName="Msg" Property="FontSize" Value="20" />
+                </MultiDataTrigger>
+                <DataTrigger Binding="{Binding IsChecking}" Value="True">
+                    <Setter TargetName="Msg" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer>
+        <StackPanel Margin="32,20,32,24">
+            <TextBlock Style="{StaticResource Text.Title}" Text="Choose the two driver installers" />
+            <TextBlock Style="{StaticResource Text.Muted}" Margin="0,4,0,0"
+                       Text="Lenovo's driver supplies the Legion Go details and is your way back. AMD's newer driver is the one that gets converted." />
+
+            <Border Style="{StaticResource Banner.Danger}" Margin="0,16,0,0"
+                    Visibility="{Binding StartupWarning, Converter={StaticResource EmptyCollapsed}}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Style="{StaticResource Text.Icon}" Text="&#xE7BA;" Foreground="{DynamicResource Brush.Danger}"
+                               VerticalAlignment="Top" Margin="0,3,14,0" />
+                    <TextBlock Style="{StaticResource Text.Body}" Text="{Binding StartupWarning}" />
+                </DockPanel>
+            </Border>
+            <Border Style="{StaticResource Banner.Info}" Margin="0,18,0,0"
+                    Visibility="{Binding Notice, Converter={StaticResource EmptyCollapsed}}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Style="{StaticResource Text.Icon}" Text="&#xE946;" Foreground="{DynamicResource Brush.Accent}"
+                               VerticalAlignment="Top" Margin="0,3,14,0" />
+                    <TextBlock Style="{StaticResource Text.Body}" Text="{Binding Notice}" />
+                </DockPanel>
+            </Border>
+
+            <Grid Margin="0,18,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="24" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Lenovo -->
+                <Border Grid.Column="0" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.Heading}" Text="Lenovo driver" />
+                        <TextBlock Style="{StaticResource Text.Muted}" Margin="0,4,0,0"
+                                   Text="The Legion Go driver from Lenovo's support site." />
+                        <Button x:Name="ChooseLenovoButton" Style="{StaticResource Button.Secondary}" Command="{Binding BrowseLenovoCommand}"
+                                Margin="0,16,0,0" HorizontalAlignment="Stretch" TabIndex="0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Text.Icon}" Text="&#xE8E5;" Margin="0,0,12,0" />
+                                <TextBlock Text="Choose file" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Style="{StaticResource Text.Muted}" Margin="0,16,0,0" Text="No file chosen yet"
+                                   Visibility="{Binding LenovoInstallerPath, Converter={StaticResource EmptyCollapsed}, ConverterParameter=invert}" />
+                        <StackPanel Margin="0,16,0,0" Visibility="{Binding LenovoInstallerPath, Converter={StaticResource EmptyCollapsed}}">
+                            <TextBlock Style="{StaticResource Text.Body}" FontWeight="SemiBold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                                       Text="{Binding LenovoInstallerPath, Converter={StaticResource FileName}}" ToolTip="{Binding LenovoInstallerPath}" />
+                            <ContentControl Margin="0,10,0,0" Focusable="False" Content="{Binding LenovoInfo}"
+                                            ContentTemplate="{StaticResource StatusTemplate}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- AMD -->
+                <Border Grid.Column="2" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.Heading}" Text="AMD driver" />
+                        <TextBlock Style="{StaticResource Text.Muted}" Margin="0,4,0,0"
+                                   Text="AMD Software for Radeon 780M graphics, from amd.com." />
+                        <Button x:Name="ChooseAmdButton" Style="{StaticResource Button.Secondary}" Command="{Binding BrowseAmdCommand}"
+                                Margin="0,16,0,0" HorizontalAlignment="Stretch" TabIndex="1">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource Text.Icon}" Text="&#xE8E5;" Margin="0,0,12,0" />
+                                <TextBlock Text="Choose file" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Style="{StaticResource Text.Muted}" Margin="0,16,0,0" Text="No file chosen yet"
+                                   Visibility="{Binding AmdInstallerPath, Converter={StaticResource EmptyCollapsed}, ConverterParameter=invert}" />
+                        <StackPanel Margin="0,16,0,0" Visibility="{Binding AmdInstallerPath, Converter={StaticResource EmptyCollapsed}}">
+                            <TextBlock Style="{StaticResource Text.Body}" FontWeight="SemiBold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                                       Text="{Binding AmdInstallerPath, Converter={StaticResource FileName}}" ToolTip="{Binding AmdInstallerPath}" />
+                            <ContentControl Margin="0,10,0,0" Focusable="False" Content="{Binding AmdInfo}"
+                                            ContentTemplate="{StaticResource StatusTemplate}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
