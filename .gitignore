@@ -1,0 +1,21 @@
+bin/
+obj/
+*.user
+.vs/
+.superpowers/
+app/tools/*.exe
+app/tools/*.dll
+publish/
+app/tools/*.manifest
+app/tools/*.ini
+
+# installer / release output
+dist/
+installer/Output/
+tools/spike/out/
+tools/spike/logs/
+
+# developer-local test settings (copy app/tests/local.runsettings.example)
+local.runsettings
+*.runsettings
+!*.runsettings.example

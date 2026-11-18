@@ -1,0 +1,12 @@
+# Normalise line endings of text files. (app/tools/licenses/.gitattributes sets "* -text" for the byte-exact licence texts.)
+* text=auto
+
+*.sh   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+
+*.png  binary
+*.ico  binary
+*.zip  binary
+*.exe  binary
+*.dll  binary

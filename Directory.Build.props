@@ -1,0 +1,6 @@
+<Project>
+  <!-- Single source of the release version. build.ps1, the installer and the release workflow read it from here. -->
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+</Project>
