@@ -22,6 +22,7 @@ A Windows app that takes AMD's current Radeon 780M graphics driver and converts 
    ```powershell
    Get-FileHash .\LegionGoDriverPort-<version>-Setup.exe -Algorithm SHA256
    ```
+
 3. Run the installer (it needs administrator rights), read the notice it shows and accept the licence. For the portable zip, extract it and copy the whole folder to `C:\Program Files\LegionGoDriverPort\` (as administrator), then start it from there; do not run it from Downloads or Documents, because the app starts programs from its `tools\` folder.
 
 **Releases are unsigned for now**, so Windows will warn you:
@@ -49,6 +50,7 @@ See [Build from source](#build-from-source).
   ```
 
   Use `--interactive` and select only the "Windows SDK Signing Tools for Desktop Apps" feature. Details: [`app/README.md`](app/README.md#installing-makecatexe-windows-sdk-signing-tools-for-desktop-apps).
+
 - To **build** from source only: the .NET 8 SDK, 7-Zip and innoextract (`winget install dscharrer.innoextract`); Inno Setup 6 for the installer.
 
 ## How it works, in short
@@ -75,7 +77,7 @@ Windows PowerShell's default execution policy (`Restricted`) refuses to run scri
 
 ## Runtime note
 
-Version 0.1.0 targets **.NET 8**, which went out of support on 2026-11-10; the self-contained build carries the final runtime, 8.0.34, and will receive no further runtime security fixes. Moving to .NET 10 (LTS) is planned.
+Version 0.1.1 targets **.NET 8**, which went out of support on 2026-11-10; the self-contained build carries the final runtime, 8.0.34, and will receive no further runtime security fixes. Moving to .NET 10 (LTS) is planned.
 
 ## Documentation
 
