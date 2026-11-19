@@ -4,7 +4,7 @@ using System.Text;
 namespace LegionGoConverter.Core;
 
 /// <summary>Identity of an MSI package, read from its Property table via msi.dll (nothing hard-coded).</summary>
-public sealed record MsiInfo(string ProductName, string ProductVersion, string ProductCode)
+public sealed record MsiInfo(string ProductName, string ProductVersion, string ProductCode, string UpgradeCode = "")
 {
     const uint IgnoreMachineState = 1; // MSIOPENPACKAGEFLAGS_IGNOREMACHINESTATE
     const uint ErrorSuccess = 0, ErrorMoreData = 234;
@@ -24,7 +24,7 @@ public sealed record MsiInfo(string ProductName, string ProductVersion, string P
         if (rc != ErrorSuccess) throw new IOException($"Could not open MSI {msiPath} (msi.dll error {rc}).");
         try
         {
-            return new MsiInfo(Get(h, "ProductName"), Get(h, "ProductVersion"), Get(h, "ProductCode"));
+            return new MsiInfo(Get(h, "ProductName"), Get(h, "ProductVersion"), Get(h, "ProductCode"), Get(h, "UpgradeCode"));
         }
         finally { MsiCloseHandle(h); }
     }

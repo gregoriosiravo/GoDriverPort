@@ -561,7 +561,7 @@ public sealed class ConversionPipeline
                 : $"Trust the certificate \"{Cert.Subject}\" (thumbprint {Cert.Thumbprint}) in the Local Machine \"Trusted Root Certification Authorities\" and \"Trusted Publishers\" stores.");
             Item($"Install the converted driver package ({Analysis.Packages.Count} INF packages) from {_convertedDir} with pnputil.");
             if (_r.InstallAmdSoftware)
-                Item($"Remove Lenovo's Microsoft Store app \"AMD Radeon Software\" ({AmdSoftwareInstaller.StoreAppName}) and install AMD Software: Adrenalin Edition from ccc2_install.exe.");
+                Item($"Remove Lenovo's Microsoft Store app \"AMD Radeon Software\" ({AmdSoftwareInstaller.StoreAppName}) and install AMD Software: Adrenalin Edition from ccc2_install.exe. An older AMD Software already installed is uninstalled first; a newer one is kept.");
             Item("A restart may be required at the end.");
             if (SigningCertificate.IsKeyExportable(Cert)) sb.Append("\r\nNote: ").Append(ExportableKeyWarning).Append("\r\n");
             sb.Append("\r\nOnce you confirm, the changes run to the end and cannot be cancelled (the result is always checked, and a rollback is offered if it fails).\r\n");

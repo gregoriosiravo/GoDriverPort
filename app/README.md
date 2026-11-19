@@ -41,7 +41,7 @@ If it is missing, the app still starts, and shows a startup warning that names `
 8. Adds the certificate to the LocalMachine Trusted Root Certification Authorities and Trusted Publishers stores of this PC.
 9. Installs the converted driver with `pnputil`.
 10. Verifies the result (driver version and device problem code).
-11. Optionally installs AMD Software (Adrenalin).
+11. Optionally installs AMD Software (Adrenalin). An older AMD Software already on the PC is uninstalled first (Windows Installer cannot compare AMD's version numbers, such as 2026.1109, so it would refuse the upgrade); a newer one is kept. Rollback does not reinstall an older AMD Software that was replaced.
 12. Tells you whether a restart is needed.
 
 ## What it does NOT do

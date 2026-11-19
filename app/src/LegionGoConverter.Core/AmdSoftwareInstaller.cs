@@ -17,15 +17,50 @@ public sealed class AmdSoftwareException : Exception
     }
 }
 
-/// <summary>Answers whether an MSI product (by ProductCode) is registered as installed.</summary>
+/// <summary>Answers whether an MSI product (by ProductCode) is registered as installed, and which installed products share an UpgradeCode.</summary>
 public interface IMsiProductQuery
 {
     bool IsInstalled(string productCode);
+    /// <summary>Installed products with this UpgradeCode (other versions of the same product), with their version strings.</summary>
+    IReadOnlyList<(string ProductCode, string Version)> RelatedProducts(string upgradeCode);
 }
 
-/// <summary>Registry-backed query (HKLM Uninstall key, 64-bit and WOW6432Node views).</summary>
+/// <summary>Registry-backed query (HKLM Uninstall key, 64-bit and WOW6432Node views); related products via msi.dll.</summary>
 public sealed class RegistryMsiProductQuery : IMsiProductQuery
 {
+    const uint ErrorSuccess = 0, ErrorMoreData = 234;
+
+    [System.Runtime.InteropServices.DllImport("msi.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, ExactSpelling = true),
+     System.Runtime.InteropServices.DefaultDllImportSearchPaths(System.Runtime.InteropServices.DllImportSearchPath.System32)]
+    static extern uint MsiEnumRelatedProductsW(string upgradeCode, uint reserved, uint index, StringBuilder productBuf);
+
+    [System.Runtime.InteropServices.DllImport("msi.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, ExactSpelling = true),
+     System.Runtime.InteropServices.DefaultDllImportSearchPaths(System.Runtime.InteropServices.DllImportSearchPath.System32)]
+    static extern uint MsiGetProductInfoW(string product, string property, StringBuilder? value, ref uint size);
+
+    public IReadOnlyList<(string ProductCode, string Version)> RelatedProducts(string upgradeCode)
+    {
+        var result = new List<(string, string)>();
+        if (!AmdSoftwareInstaller.IsProductCode(upgradeCode)) return result;
+        for (uint i = 0; ; i++)
+        {
+            var buf = new StringBuilder(39);
+            if (MsiEnumRelatedProductsW(upgradeCode, 0, i, buf) != ErrorSuccess) break; // 259 = no more items
+            var code = buf.ToString();
+            uint size = 0;
+            var rc = MsiGetProductInfoW(code, "VersionString", null, ref size);
+            var version = "";
+            if (rc is ErrorSuccess or ErrorMoreData)
+            {
+                var v = new StringBuilder((int)size + 1);
+                size = (uint)v.Capacity;
+                if (MsiGetProductInfoW(code, "VersionString", v, ref size) == ErrorSuccess) version = v.ToString();
+            }
+            result.Add((code, version));
+        }
+        return result;
+    }
+
     public bool IsInstalled(string productCode)
     {
         using var hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
@@ -180,6 +215,32 @@ public sealed class AmdSoftwareInstaller : IAmdSoftwareInstaller
                 all.Add(code); preExisting.Add(code);
                 continue;
             }
+            // Another version of the same product (same UpgradeCode, different ProductCode). AMD's version numbers
+            // (e.g. 2026.1109) overflow Windows Installer's 255 limit per field, so msiexec cannot tell older from newer and
+            // refuses with "a newer version is already installed" (1603). Compare the versions ourselves: keep a newer one,
+            // uninstall an older one first (as AMD's own setup does).
+            var related = string.IsNullOrEmpty(p.Info.UpgradeCode)
+                ? Array.Empty<(string ProductCode, string Version)>()
+                : _query.RelatedProducts(p.Info.UpgradeCode).Where(x => !string.Equals(x.ProductCode, code, StringComparison.OrdinalIgnoreCase)).ToArray();
+            var newer = related.Where(x => CompareVersions(x.Version, p.Info.ProductVersion) >= 0).ToArray();
+            if (newer.Length > 0)
+            {
+                foreach (var n in newer)
+                {
+                    _log.Info($"{p.Info.ProductName} {n.Version} ({n.ProductCode}) is already installed and is not older than {p.Info.ProductVersion}; keeping it.");
+                    all.Add(n.ProductCode); preExisting.Add(n.ProductCode);
+                }
+                continue;
+            }
+            foreach (var old in related)
+            {
+                _log.Info($"Removing the older {p.Info.ProductName} {old.Version} ({old.ProductCode}) before installing {p.Info.ProductVersion}.");
+                try { await new AmdSoftwareUninstaller(_runner, _log).UninstallAsync(new[] { old.ProductCode }, CancellationToken.None).ConfigureAwait(false); }
+                catch (AmdSoftwareException ex)
+                {
+                    throw new AmdSoftwareException($"Could not remove the older {p.Info.ProductName} {old.Version} ({old.ProductCode}): {ex.Message}", installed.ToArray(), preExisting.ToArray(), ex);
+                }
+            }
             var msiLog = Path.Combine(logDir, "msi-" + Regex.Replace(p.Info.ProductName, @"[^A-Za-z0-9]+", "-") + ".log");
             var args = new List<string> { "/i", p.Msi };
             if (p.Dvr) args.Add("LAUNCHED_FROM_CIM=1");
@@ -203,6 +264,20 @@ public sealed class AmdSoftwareInstaller : IAmdSoftwareInstaller
         new AmdSoftwareUninstaller(_runner, _log).UninstallAsync(productCodes, ct);
 
     internal static bool IsProductCode(string code) => ProductCodeRx.IsMatch(code);
+
+    /// <summary>Compares dotted version strings numerically field by field (missing fields count as 0, no 255 limit).
+    /// An unparsable field counts as 0.</summary>
+    internal static int CompareVersions(string a, string b)
+    {
+        var x = (a ?? "").Split('.'); var y = (b ?? "").Split('.');
+        for (var i = 0; i < Math.Max(x.Length, y.Length); i++)
+        {
+            long.TryParse(i < x.Length ? x[i] : "0", out var u);
+            long.TryParse(i < y.Length ? y[i] : "0", out var v);
+            if (u != v) return u.CompareTo(v);
+        }
+        return 0;
+    }
 
     /// <summary>Quotes a value as a PowerShell single-quoted literal (doubles every quote-like character).</summary>
     static string PsQuote(string s)

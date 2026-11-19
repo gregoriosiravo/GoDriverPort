@@ -4,6 +4,8 @@ public class AmdSoftwareInstallerTests
 {
     const string SettingsCode = "{5E5E4309-86A8-4B2A-84E1-A686D2B185EA}";
     const string DvrCode = "{9CE31951-23D9-40F7-B738-63B49B9B552A}";
+    const string SettingsUpgrade = "{A837E2B7-5BA6-4286-BC21-A002FCDD9A85}";
+    const string OldSettingsCode = "{11111111-2222-3333-4444-555555555555}";
     const string SevenZip = @"C:\tools\7z.exe";
     const string AmdSubject = "CN=Advanced Micro Devices, O=Advanced Micro Devices, S=California, C=US";
 
@@ -12,7 +14,10 @@ public class AmdSoftwareInstallerTests
     sealed class FakeQuery : IMsiProductQuery
     {
         public HashSet<string> Installed { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, List<(string Code, string Version)>> Related { get; } = new(StringComparer.OrdinalIgnoreCase);
         public bool IsInstalled(string productCode) => Installed.Contains(productCode);
+        public IReadOnlyList<(string ProductCode, string Version)> RelatedProducts(string upgradeCode) =>
+            Related.TryGetValue(upgradeCode, out var l) ? l.ToArray() : Array.Empty<(string, string)>();
     }
 
     sealed class Rig : IDisposable
@@ -26,6 +31,8 @@ public class AmdSoftwareInstallerTests
         public string StoreCount = "0";
         public Func<string, int> MsiExit = _ => 0;
         public bool CreateMsis = true;
+        public int UninstallExit = 0;
+        public string SettingsVersion = "2026.1023.2327.2112";
         public string CccPath = Path.Combine(Path.GetTempPath(), "lgo ccc " + Guid.NewGuid().ToString("N") + ".exe");
 
         public Rig()
@@ -55,6 +62,15 @@ public class AmdSoftwareInstallerTests
                 }
                 if (exe.EndsWith("msiexec.exe", StringComparison.OrdinalIgnoreCase))
                 {
+                    if (args[0] == "/x")
+                    {
+                        if (UninstallExit is 0 or 1605 or 1641 or 3010)
+                        {
+                            foreach (var l in Query.Related.Values) l.RemoveAll(r => r.Code == args[1]);
+                            Query.Installed.Remove(args[1]);
+                        }
+                        return (UninstallExit, "");
+                    }
                     var msi = args[1];
                     var code = msi.Contains("amddvr") ? 1 : 0;
                     var exit = MsiExit(msi);
@@ -67,7 +83,7 @@ public class AmdSoftwareInstallerTests
 
         public AmdSoftwareInstaller Make() => new(Runner, Tools, Log, Query, p =>
             p.Contains("amddvr") ? new MsiInfo("AMD DVR", "26.20.26296.2323", DvrCode)
-                                 : new MsiInfo("AMD Settings", "2026.1023.2327.2112", SettingsCode));
+                                 : new MsiInfo("AMD Settings", SettingsVersion, SettingsCode, SettingsUpgrade));
 
         public IEnumerable<string> Msiexec => Runner.Calls.Where(c => c.Exe.EndsWith("msiexec.exe", StringComparison.OrdinalIgnoreCase)).Select(c => string.Join(" ", c.Args));
         public bool RemovedStoreApp => Runner.Calls.Any(c => c.Args.Any(a => a.Contains("Remove-AppxPackage")));
@@ -112,6 +128,60 @@ public class AmdSoftwareInstallerTests
         var only = Assert.Single(rig.Msiexec);
         Assert.Contains("amddvr64.msi", only);
     }
+
+    // Real failure (2026-11-19): AMD Settings 2026.1023 installed, the package's 2026.1109 has a new ProductCode and the same
+    // UpgradeCode. AMD's versions overflow Windows Installer's 255 limit per field, so msiexec /i reports "a newer version is
+    // already installed" (1603). The older product must be uninstalled first, as AMD's own setup does.
+    [Fact]
+    public async Task Install_OlderProductWithSameUpgradeCode_IsUninstalledFirst()
+    {
+        using var rig = new Rig { SettingsVersion = "2026.1109.2249.2112" };
+        rig.Query.Installed.Add(OldSettingsCode);
+        rig.Query.Related[SettingsUpgrade] = new() { (OldSettingsCode, "2026.1023.2327.2112") };
+        var r = await rig.Make().InstallDetailedAsync(rig.CccPath, rig.Work, CancellationToken.None);
+        var calls = rig.Msiexec.ToList();
+        Assert.Equal(3, calls.Count);
+        Assert.StartsWith("/x " + OldSettingsCode, calls[0]);
+        Assert.Contains("ccc-next64.msi", calls[1]);
+        Assert.Contains("amddvr64.msi", calls[2]);
+        Assert.Equal(new[] { SettingsCode, DvrCode }, r.InstalledByThisRun);
+        Assert.DoesNotContain(OldSettingsCode, r.ProductCodes);
+        Assert.Contains(rig.Log.Lines, l => l.Contains(OldSettingsCode) && l.Contains("older"));
+    }
+
+    [Fact]
+    public async Task Install_NewerProductWithSameUpgradeCode_IsKept_NotDowngraded()
+    {
+        using var rig = new Rig { SettingsVersion = "2026.1023.2327.2112" };
+        rig.Query.Installed.Add(OldSettingsCode);
+        rig.Query.Related[SettingsUpgrade] = new() { (OldSettingsCode, "2026.1109.2249.2112") };
+        var r = await rig.Make().InstallDetailedAsync(rig.CccPath, rig.Work, CancellationToken.None);
+        var only = Assert.Single(rig.Msiexec);
+        Assert.Contains("amddvr64.msi", only);
+        Assert.Contains(OldSettingsCode, r.AlreadyPresent);
+        Assert.Contains(OldSettingsCode, r.ProductCodes);
+        Assert.DoesNotContain(OldSettingsCode, r.InstalledByThisRun);
+    }
+
+    [Fact]
+    public async Task Install_UninstallOfOlderProductFails_StopsBeforeInstalling()
+    {
+        using var rig = new Rig { SettingsVersion = "2026.1109.2249.2112", UninstallExit = 1603 };
+        rig.Query.Installed.Add(OldSettingsCode);
+        rig.Query.Related[SettingsUpgrade] = new() { (OldSettingsCode, "2026.1023.2327.2112") };
+        var ex = await Assert.ThrowsAsync<AmdSoftwareException>(() => rig.Make().InstallDetailedAsync(rig.CccPath, rig.Work, CancellationToken.None));
+        Assert.Contains(OldSettingsCode, ex.Message);
+        Assert.Single(rig.Msiexec);
+        Assert.Empty(ex.InstalledProductCodes);
+    }
+
+    [Theory]
+    [InlineData("2026.1109.2249.2112", "2026.1023.2327.2112", 1)]
+    [InlineData("26.20.26296.2323", "26.20.26313.2245", -1)]
+    [InlineData("1.2", "1.2.0", 0)]
+    [InlineData("10.0", "9.99", 1)]
+    public void CompareVersions_IsNumericPerField(string a, string b, int expected)
+        => Assert.Equal(expected, Math.Sign(AmdSoftwareInstaller.CompareVersions(a, b)));
 
     [Fact]
     public async Task Install_ExactArguments_InOrder_AndExtractsOnlyTheTwoFolders()
