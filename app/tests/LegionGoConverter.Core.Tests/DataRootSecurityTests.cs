@@ -22,8 +22,10 @@ public class DataRootSecurityTests : IDisposable
     DataRootSecurity AsAdmin() => new(Root, new[] { DataRootSecurity.SystemSid, DataRootSecurity.AdministratorsSid, Me },
         sid => sid == Me || DataRootSecurity.IsAdminOwner(sid), Me);
 
-    /// <summary>Production trust rules: the test user is NOT a trusted owner.</summary>
-    DataRootSecurity Production() => DataRootSecurity.ForRoot(Root);
+    /// <summary>Production-like trust rules where neither the test user nor Administrators is a trusted owner (a CI runner's
+    /// user is an elevated admin, so folders it creates are owned by Administrators and would pass the real predicate).</summary>
+    DataRootSecurity Production() => new(Root, new[] { DataRootSecurity.SystemSid, DataRootSecurity.AdministratorsSid },
+        sid => sid == DataRootSecurity.SystemSid, DataRootSecurity.AdministratorsSid);
 
     static DirectorySecurity Acl(string dir) => new DirectoryInfo(dir).GetAccessControl(AccessControlSections.Owner | AccessControlSections.Access);
     static string Sddl(string dir) => Acl(dir).GetSecurityDescriptorSddlForm(AccessControlSections.Owner | AccessControlSections.Access);

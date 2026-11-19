@@ -85,6 +85,24 @@ Version 0.1.0 targets **.NET 8**, which went out of support on 2026-11-10; the s
 - [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md)
 - [`docs/design/`](docs/design/): original design and implementation plan (historical)
 
+## Code signing policy
+
+Releases are not code-signed yet. This section is the policy that will apply once they are (free code signing provided by [SignPath.io](https://signpath.io), certificate by the [SignPath Foundation](https://signpath.org/foundation)).
+
+- Only release files built by the [Release workflow](.github/workflows/release.yml) from a `v*` tag on `main` in this repository are submitted for signing. Local or fork builds are never signed.
+- **Committers and reviewers / approvers:** [@gregoriosiravo](https://github.com/gregoriosiravo), the repository owner and sole maintainer (see [`CODEOWNERS`](.github/CODEOWNERS)). Every change to `main` needs the maintainer's review.
+- Each signing request is approved manually by the maintainer.
+- The signed files are the app executable and `Setup.exe`. The SHA-256 of every release file is published in `SHA256SUMS.txt`.
+- This is separate from the self-signed certificate the app creates on your PC to sign the converted driver (see [`app/README.md`](app/README.md)); that one is never shared or uploaded.
+
+## Privacy
+
+The app does not collect, store remotely or send any data, and contains no telemetry, analytics, update check or network code. It works on your PC only:
+
+- It reads the installers you point it to and your PC's hardware IDs, to check the driver matches your device.
+- Its working files and session logs stay on your PC in `C:\ProgramData\LegionGoDriverConverter` and are never uploaded. Logs can include file paths and device IDs, so look them over before attaching them to a bug report.
+- The only link it shows is the Microsoft page to download the Windows SDK, which you open yourself.
+
 ## License
 
 The source code is under the [MIT License](LICENSE). The released app bundles third-party components under their own licences; see [`app/THIRD-PARTY-NOTICES.md`](app/THIRD-PARTY-NOTICES.md). AMD, Radeon, Adrenalin, Lenovo, Legion, Microsoft and Windows are trademarks of their respective owners. Legion Go Driver Port is an unofficial community tool, not affiliated with or endorsed by Lenovo or AMD.
